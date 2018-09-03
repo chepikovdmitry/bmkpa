@@ -25,10 +25,44 @@ function initGrid(){
    // myGrid.load("../common/grid.xml");
 }
 var myGrid;
+var myCalendar;
+var shopCombo;
 
 $( document ).ready(function() {
-    initCombo("combo_zone1");
-    initCombo("combo_zone2");
+    //init calendar
+    myCalendar = new dhtmlXCalendarObject("cal_1");
+    myCalendar.hideTime();
+    $.ajax({
+        url: '/getDateRange',             // указываем URL и
+        dataType : "json",                     // тип загружаемых данных
+        success: function (data, textStatus) { // вешаем свой обработчик на функцию success
+            myCalendar.setSensitiveRange(data.startDate,data.endDate);
+        }
+    });
+    //init Shop combo
+    shopCombo = new dhtmlXCombo("combo_zone2");
+    /*
+    myCombo.load("../common/data_airports.json", function(){
+        // callback
+    });*/
+
+    //init change date
+    myCalendar.attachEvent("onBeforeChange", function(d){
+       // var allow = d.getDate()<20;
+       // writeLog("onBeforeChange event called, date "+myCalendar.getFormatedDate(null,d)+", "+(allow?"allow to change":"not allow"));
+        $.ajax({
+            url: '/getShopList'+'?date='+myCalendar.getFormatedDate(null,d),             // указываем URL и
+            dataType : "json",                     // тип загружаемых данных
+            success: function (data, textStatus) { // вешаем свой обработчик на функцию success
+                $.each(data, function(i, val) {    // обрабатываем полученные данные
+                    shopCombo.addOption([[val.id,val.name]]);
+                });
+            }
+        });
+        return true;
+    });
+
+    //initCombo("combo_zone2");
     initCombo("combo_zone3");
     initCombo("combo_zone4");
     initCombo("combo_zone5");
